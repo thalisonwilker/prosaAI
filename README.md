@@ -13,3 +13,7 @@ Definição de fontes de noticias (RSS) -> Geração de Resumo de diversas fonte
 - Desenvolver uma solução de código aberto para auxiliar na preparação para o ENEM.
 - Gerar um impacto social positivo na educação
 - Ser um espaço para experimentação e aprendizado rápido 
+
+## Contribuição
+
+Contribuir para o ProsaAI é simples e incentivado! Sinta-se à vontade para fazer um fork do projeto, explorar o código e propor melhorias ou novas funcionalidades. Sugestões e contribuições de qualquer tipo são bem-vindas, sejam elas relacionadas a desenvolvimento, documentação ou novas ideias para funcionalidades.
