@@ -7,6 +7,7 @@ import random
 
 import feedparser
 from openai import OpenAI
+from core.exceptions import ParserError
 
 client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +31,7 @@ def coletar_noticias(feeds):
                     "descricao": entry.description,
                     "link": entry.link
                 })
-            except Exception as e:
+            except ParserError as e:
                 logger.error("Erro ao coletar notícia: %s", e)
     return noticias
 
@@ -49,16 +50,22 @@ def gerar_resumo_e_tema(noticias):
     noticias = noticias[:3]
     # Consolida descrições das notícias em um único texto
     texto_noticias = " ".join([noticia["descricao"] for noticia in noticias])
-
+    response_schema = {
+        "resumo": "resumo dos principais temas abordados",
+        "tema": "Tema da redação sugerido em português",
+        "instrucoes": "instruções em português"
+    }
     prompt = (
         f"Aqui está um conjunto de notícias recentes:\n\n"
         f"{texto_noticias}\n\n"
         f"1. Forneça um resumo dos principais temas abordados.\n"
         f"2. Sugira um tema de redação com título e instruções em português.\n\n"
+        f"3. Devolva a resposta em formato JSON. O  JSON deve conter {response_schema}"
     )
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4o-mini",
+        response_format={ "type": "json_object" },
         messages=[
         {"role": "system", "content": "Você é gerador de temas de redação no Formato ENEM"},
         {"role": "user", "content": prompt},
@@ -76,6 +83,6 @@ def load_feeds_json(path_to_json):
         list: Lista de feeds RSS.
 
     """
-    with open(path_to_json, "r") as file:
+    with open(path_to_json, "r", encoding="utf-8") as file:
         feeds = json.load(file)
     return feeds
