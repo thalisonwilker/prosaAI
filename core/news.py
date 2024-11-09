@@ -70,8 +70,8 @@ def build_prompt(texto_noticias):
         f"2. Sugira um tema de redação com título e instruções em português\n\n"
         f"3. Siga o padrão do ENEM (Exame nacional do Ensino Médio)"
         f"4. Adicione recomendação do número mínimo de linhas e máximo de linhas.\n\n"
-        f"Devolva a resposta em formato JSON. O  JSON deve conter {
-            response_schema}"
+        f"Devolva a resposta em formato JSON O  JSON deve conter:\n\n"
+        f"{response_schema}"
     )
     return prompt
 
