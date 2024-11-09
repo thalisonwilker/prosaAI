@@ -7,9 +7,8 @@ import random
 
 import feedparser
 from openai import OpenAI
-from core.exceptions import ParserError
 
-client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -23,18 +22,58 @@ def coletar_noticias(feeds):
     """
     noticias = []
     for feed_url in feeds:
-        feed = feedparser.parse(feed_url)
-        for entry in feed['entries']:
-            try:
-                noticias.append({
-                    "titulo": entry.title,
-                    "descricao": entry.description,
-                    "link": entry.link
-                })
-            except ParserError as e:
-                logger.error("Erro ao coletar notícia: %s", e)
+        noticias.extend(parse_feed(feed_url))
     return noticias
 
+
+def parse_feed(feed_url):
+    """Parses a single RSS feed and extracts news entries.
+    Args:
+        feed_url (str): URL of the RSS feed.
+    Returns:
+        list: List of news entries.
+    """
+    feed = feedparser.parse(feed_url)
+    entries = []
+    for entry in feed.get('entries', []):
+        try:
+            entries.append({
+                "titulo": entry.title,
+                "descricao": entry.description,
+                "link": entry.link
+            })
+        except AttributeError as e:
+            logger.error("Erro ao coletar notícia: %s", e)
+    return entries
+
+
+def build_prompt(texto_noticias):
+    """
+    Gera o prompt.
+    Args:
+        texto_noticias (str)
+    Return:
+        str: prompt
+    """
+    response_schema = {
+        "resumo": "resumo dos principais temas abordados",
+        "tema": "Tema da redação sugerido em português",
+        "instrucoes": "instruções em português"
+    }
+    prompt = (
+        f"Aqui está um conjunto de notícias recentes:\n\n"
+
+        f" ### Notícias ###\n"
+        f"{texto_noticias}\n\n"
+        f"### Instruções ###\n"
+        f"1. Forneça um resumo dos principais temas abordados.\n\n"
+        f"2. Sugira um tema de redação com título e instruções em português\n\n"
+        f"3. Siga o padrão do ENEM (Exame nacional do Ensino Médio)"
+        f"4. Adicione recomendação do número mínimo de linhas e máximo de linhas.\n\n"
+        f"Devolva a resposta em formato JSON O  JSON deve conter:\n\n"
+        f"{response_schema}"
+    )
+    return prompt
 
 
 def gerar_resumo_e_tema(noticias):
@@ -50,25 +89,15 @@ def gerar_resumo_e_tema(noticias):
     noticias = noticias[:3]
     # Consolida descrições das notícias em um único texto
     texto_noticias = " ".join([noticia["descricao"] for noticia in noticias])
-    response_schema = {
-        "resumo": "resumo dos principais temas abordados",
-        "tema": "Tema da redação sugerido em português",
-        "instrucoes": "instruções em português"
-    }
-    prompt = (
-        f"Aqui está um conjunto de notícias recentes:\n\n"
-        f"{texto_noticias}\n\n"
-        f"1. Forneça um resumo dos principais temas abordados.\n"
-        f"2. Sugira um tema de redação com título e instruções em português.\n\n"
-        f"3. Devolva a resposta em formato JSON. O  JSON deve conter {response_schema}"
-    )
+    prompt = build_prompt(texto_noticias)
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        response_format={ "type": "json_object" },
+        response_format={"type": "json_object"},
         messages=[
-        {"role": "system", "content": "Você é gerador de temas de redação no Formato ENEM"},
-        {"role": "user", "content": prompt},
+            {"role": "system",
+                "content": "Você é gerador de temas de redação no Formato ENEM"},
+            {"role": "user", "content": prompt},
         ],
     )
 
