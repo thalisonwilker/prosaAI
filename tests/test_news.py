@@ -1,22 +1,28 @@
+"""Testes para a função coletar_noticias."""
 import os
 
 import unittest
 from unittest.mock import patch
+# pylint: disable=import-error
 from core.news import coletar_noticias
 
 
 class TestColetarNoticias(unittest.TestCase):
+    """Testa a função coletar_noticias."""
 
     def setUp(self):
+        """Set up test fixtures."""
         os.environ['OPENAI_API_KEY'] = '123'
 
     def tearDown(self):
+        """Tear down test fixtures."""
         del os.environ['OPENAI_API_KEY']
 
     @patch('core.news.parse_feed')
     # mocking environment variables OPENAI_API_KEY
     @patch.dict(os.environ, {'OPENAI_API_KEY': '123'})
     def test_coletar_noticias_success(self, mock_parse):
+        """Testa a função coletar_noticias."""
         # Mocking feedparser.parse to return a predefined structure
         mock_feed = [
             {
