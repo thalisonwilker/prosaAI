@@ -24,8 +24,14 @@ def generate_theme():
     news_source = load_feeds_json(NEWS_PATH)
     news_url = [news["URL"] for news in news_source]
     noticias = coletar_noticias(news_url)
-    tema = gerar_resumo_e_tema(noticias)
-    tema = json.loads(tema)
+
+    try:
+        resumo_e_tema = gerar_resumo_e_tema(noticias)
+        resumo_e_tema = json.loads(resumo_e_tema)
+    # TODO: remover except genérico
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)})
+
     # extrai o JSON
-    tema_json = jsonable_encoder(tema)
+    tema_json = jsonable_encoder(resumo_e_tema)
     return JSONResponse(content=tema_json)
