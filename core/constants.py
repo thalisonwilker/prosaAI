@@ -3,9 +3,11 @@
 NEWS_PATH = "source/rss_source.json"
 
 NUM_NOTICIAS = 3
+SIM_THRESHOLD = 0.7
 PROVIDER = "openai"
 MODEL1 = "gpt-4o-mini"
 MODEL2 = "gpt-4o"
+GUARDRAIL_MSG = "Tema inapropriado: %s"
 # disable linting for the next line
 # pylint: disable=line-too-long
 temas_enem = {
@@ -36,3 +38,17 @@ temas_enem = {
     2022: "Desafios para a valorização de comunidades e povos tradicionais no Brasil",
     2023: "Desafios do envelhecimento populacional no Brasil",
 }
+
+# esses termos são inapropriados para temas de redação
+# Essa lista deve ser atualizada conforme a necessidade
+
+# Essa é somente uma lista de exemplo, sendo a primeira camada de proteção
+# para temas inapropriados. A segunda camada é a validação por embedding.
+# A terceira camada é a validação por um modelo de linguagem mais poderoso.
+termos_inapropriados = [
+    "impuros",
+    "inadequados",
+    "morte",
+    "linchamento",
+    "limpeza étnica",
+]
