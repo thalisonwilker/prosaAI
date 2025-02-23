@@ -1,3 +1,4 @@
+"""Init file"""
 import os
 
 # load core to PATH
