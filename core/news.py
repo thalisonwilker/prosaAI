@@ -1,14 +1,14 @@
 """Módulo para coleta e processamento de notícias."""
-
 import json
 import logging
-import os
 import random
 
 import feedparser
-from openai import OpenAI
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from core.constants import temas_enem
+from core.guardrails import is_tema_valido_regex, validador_etico_enem
+from core.servico_llm import make_llm_call
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -37,11 +37,13 @@ def parse_feed(feed_url):
     entries = []
     for entry in feed.get('entries', []):
         try:
-            entries.append({
-                "titulo": entry.title,
-                "descricao": entry.description,
-                "link": entry.link
-            })
+            entries.append(
+                {
+                    "titulo": entry.title,
+                    "descricao": entry.description,
+                    "link": entry.link,
+                }
+            )
         except AttributeError as e:
             logger.error("Erro ao coletar notícia: %s", e)
     return entries
@@ -55,29 +57,36 @@ def build_prompt(texto_noticias):
     Return:
         str: prompt
     """
+
     response_schema = {
         "resumo": "resumo dos principais temas abordados",
         "tema": "Tema da redação sugerido em português",
-        "instrucoes": "instruções em português"
+        "instrucoes": "instruções em português",
     }
+    tarefa = (
+        "### Instruções ###\n"
+        "1. Forneça um resumo dos principais temas abordados.\n\n"
+        "2. Sugira um tema de redação com título e instruções em português\n\n"
+        "3. Siga o padrão do ENEM (Exame nacional do Ensino Médio)"
+        "4. Adicione recomendação do"
+        " número mínimo de linhas e máximo de linhas.\n\n"
+    )
+
     prompt = (
         f"Aqui está um conjunto de notícias recentes:\n\n"
-
         f" ### Notícias ###\n"
         f"{texto_noticias}\n\n"
-        f"### Instruções ###\n"
-        f"1. Forneça um resumo dos principais temas abordados.\n\n"
-        f"2. Sugira um tema de redação com título e instruções em português\n\n"
-        f"3. Siga o padrão do ENEM (Exame nacional do Ensino Médio)"
-        f"4. Adicione recomendação do número mínimo de linhas e máximo de linhas.\n\n"
-        f"Devolva a resposta em formato JSON O  JSON deve conter:\n\n"
+        f"### Exemplo de Tema ENEM ###\n"
+        f"{random.choice(list(temas_enem.values()))}\n\n"
+        f"{tarefa}\n\n"
+        f"Devolva a resposta em formato JSON:\n\n"
         f"{response_schema}"
     )
     return prompt
 
 
 def gerar_resumo_e_tema(noticias):
-    """Gera um resumo e um tema de redação baseado nas notícias fornecidas.
+    """Gera um resumo e um tema de redação considerando as notícias fornecidas.
     Args:
         noticias (list): Lista de notícias.
     Returns:
@@ -90,18 +99,17 @@ def gerar_resumo_e_tema(noticias):
     # Consolida descrições das notícias em um único texto
     texto_noticias = " ".join([noticia["descricao"] for noticia in noticias])
     prompt = build_prompt(texto_noticias)
+    contexto = "Você é gerador de temas de redação no Formato ENEM"
+    response = make_llm_call("openai", "gpt-4o-mini", contexto, prompt)
+    tema_sugerido = json.loads(response)
+    # sobrescreve a situação para testar o validador ético
+    if is_tema_valido_regex(tema_sugerido["tema"]):
+        return response
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system",
-                "content": "Você é gerador de temas de redação no Formato ENEM"},
-            {"role": "user", "content": prompt},
-        ],
-    )
-
-    return response.choices[0].message.content
+    if validador_etico_enem(tema_sugerido["tema"]):
+        return response
+    logger.warning("Tema inapropriado: %s", tema_sugerido["tema"])
+    return "Tema inapropriado"
 
 
 def load_feeds_json(path_to_json):
