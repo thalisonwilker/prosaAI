@@ -2,6 +2,10 @@
 
 NEWS_PATH = "source/rss_source.json"
 
+NUM_NOTICIAS = 3
+PROVIDER = "openai"
+MODEL1 = "gpt-4o-mini"
+MODEL2 = "gpt-4o"
 temas_enem = {
     1998: "Viver e aprender",
     1999: "Cidadania e participação social",

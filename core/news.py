@@ -5,8 +5,10 @@ import random
 
 import feedparser
 
-from core.constants import temas_enem
-from core.guardrails import is_tema_valido_regex, validador_etico_enem
+from core.constants import (temas_enem, NUM_NOTICIAS,
+                            PROVIDER, MODEL1)
+from core.guardrails import (checar_tema_enem_por_regex,
+                             checar_tema_enem_por_llm)
 from core.servico_llm import make_llm_call
 
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +29,9 @@ def coletar_noticias(feeds):
 
 
 def parse_feed(feed_url):
-    """Parses a single RSS feed and extracts news entries.
+    """
+    Coleta e consolida notícias de um feed RSS.
+
     Args:
         feed_url (str): URL of the RSS feed.
     Returns:
@@ -95,18 +99,18 @@ def gerar_resumo_e_tema(noticias):
 
     random.shuffle(noticias)
     # embaralha as notícias e seleciona as 3 primeiras
-    noticias = noticias[:3]
+    noticias = noticias[:NUM_NOTICIAS]
     # Consolida descrições das notícias em um único texto
     texto_noticias = " ".join([noticia["descricao"] for noticia in noticias])
     prompt = build_prompt(texto_noticias)
     contexto = "Você é gerador de temas de redação no Formato ENEM"
-    response = make_llm_call("openai", "gpt-4o-mini", contexto, prompt)
+    response = make_llm_call(PROVIDER, MODEL1, contexto, prompt)
     tema_sugerido = json.loads(response)
     # sobrescreve a situação para testar o validador ético
-    if is_tema_valido_regex(tema_sugerido["tema"]):
+    if checar_tema_enem_por_regex(tema_sugerido["tema"]):
         return response
 
-    if validador_etico_enem(tema_sugerido["tema"]):
+    if checar_tema_enem_por_llm(tema_sugerido["tema"]):
         return response
     logger.warning("Tema inapropriado: %s", tema_sugerido["tema"])
     return "Tema inapropriado"
