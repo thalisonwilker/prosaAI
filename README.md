@@ -1,5 +1,4 @@
-[![Pylint](https://github.com/cmagnobarbosa/prosaAI/actions/workflows/pylint.yml/badge.svg)](https://github.com/cmagnobarbosa/prosaAI/actions/workflows/pylint.yml)
-
+[![Pylint](https://github.com/cmagnobarbosa/prosaAI/actions/workflows/pylint.yml/badge.svg?branch=main)](https://github.com/cmagnobarbosa/prosaAI/actions/workflows/pylint.yml)
 # ProsaAI
 
 ProsaAI é um gerador de temas de redações para o ENEM que utiliza inteligência artificial e notícias atuais em formato RSS para inspirar estudantes com temas relevantes e contemporâneos.
