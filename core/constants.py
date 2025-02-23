@@ -6,6 +6,8 @@ NUM_NOTICIAS = 3
 PROVIDER = "openai"
 MODEL1 = "gpt-4o-mini"
 MODEL2 = "gpt-4o"
+# disable linting for the next line
+# pylint: disable=line-too-long
 temas_enem = {
     1998: "Viver e aprender",
     1999: "Cidadania e participação social",
