@@ -7,7 +7,8 @@ import feedparser
 
 from core.constants import (temas_enem, NUM_NOTICIAS,
                             PROVIDER, MODEL1)
-from core.guardrails import (checar_tema_enem_por_regex,
+from core.guardrails import (checar_tema_enem_analise_sintatica,
+                             checar_tema_enem_semantica,
                              checar_tema_enem_por_llm)
 from core.servico_llm import make_llm_call
 
@@ -106,8 +107,13 @@ def gerar_resumo_e_tema(noticias):
     contexto = "Você é gerador de temas de redação no Formato ENEM"
     response = make_llm_call(PROVIDER, MODEL1, contexto, prompt)
     tema_sugerido = json.loads(response)
+
+    # Abordagem de validação do tema por três camadas.
     # sobrescreve a situação para testar o validador ético
-    if checar_tema_enem_por_regex(tema_sugerido["tema"]):
+    if checar_tema_enem_analise_sintatica(tema_sugerido["tema"]):
+        return response
+    # checa tema por analise semantica
+    if checar_tema_enem_semantica(tema_sugerido["tema"]):
         return response
 
     if checar_tema_enem_por_llm(tema_sugerido["tema"]):
