@@ -1,5 +1,5 @@
 import requests
-from provedores import *
+from core.chat_api.provedores import *
 
 provedores_suportados = {
     OpenAI.placeholer(): {
@@ -18,6 +18,7 @@ provedores_suportados = {
 
 class ChatAPI:
     def __init__(self, provedor="", modelo="", api_key=""):
+        print("chat iniciado com o provedor", provedor)
         if(provedor not in provedores_suportados.keys()):
             raise UnsupportedProviderError(provedor)
 
@@ -28,6 +29,11 @@ class ChatAPI:
         self.api_url = provedores_suportados[provedor]["api_url"]
         self.modelo = modelo
         self.api_key = api_key
+
+    
+    def ajusta_retorno(self, conteudo):
+        if("```json" in conteudo):
+            return conteudo.replace("```json", "").replace("```", "")
 
     def gera_conteudo(self, contexto, prompt):
         url = self.api_url
@@ -69,12 +75,12 @@ class ChatAPI:
                 candidates = data["candidates"]
                 content = candidates[0]["content"]
                 parts = content["parts"][0]
-                return parts["text"]
+                return self.ajusta_retorno(parts["text"])
             else:
                 choices = data["choices"][0]
                 message = choices["message"]
                 content = message["content"]
-                return content
+                return self.ajusta_retorno(content)
 
         elif(resp.status_code == 400):
             print(resp.text)
