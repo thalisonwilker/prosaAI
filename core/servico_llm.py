@@ -7,31 +7,19 @@ import os
 
 from openai import OpenAI
 
-OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from core.chat_api import ChatAPI
+
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
 
-def make_llm_call(provider, model, contexto, prompt):
-    """
-    Criar uma chamada para o modelo de linguagem.
-    Cria uma camada de abstração para a chamada do modelo de linguagem.
-    Args:
-        provider (str): Provedor do modelo
-        model (str): Modelo
-        contexto (str): Contexto
-        prompt (str): Prompt
-    Returns:
-        response: Resposta do modelo
-    """
-    if provider == "openai":
-        response = make_openai_call(contexto, prompt, model)
-        return response
-    raise ValueError("Provedor não suportado.")
-
+def make_llm_call(provider, model, contexto, prompt, api_key=""):
+    llm = ChatAPI(provider, model, api_key)
+    return llm.gera_conteudo(contexto, prompt)
 
 def make_openai_call(contexto, prompt, model_choice="gpt-4o-mini"):
+    OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     """
     Faz a chamada para o modelo OpenAI.
     Arsgs:
