@@ -1,12 +1,16 @@
 """Constants for the project"""
+from decouple import config
 
 NEWS_PATH = "source/rss_source.json"
 
 NUM_NOTICIAS = 3
 SIM_THRESHOLD = 0.7
-PROVIDER = "openai"
-MODEL1 = "gpt-4o-mini"
-MODEL2 = "gpt-4o"
+
+PROVIDER = config("PROVIDER")
+PROVIDER_API_KEY = config("PROVIDER_API_KEY")
+MODEL1 = config("MODEL1")
+MODEL2 = config("MODEL2")
+
 GUARDRAIL_MSG = "Tema inapropriado: %s"
 # disable linting for the next line
 # pylint: disable=line-too-long
