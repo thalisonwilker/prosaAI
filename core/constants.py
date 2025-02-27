@@ -11,6 +11,8 @@ PROVIDER_API_KEY = config("PROVIDER_API_KEY")
 MODEL1 = config("MODEL1")
 MODEL2 = config("MODEL2")
 
+print(PROVIDER, PROVIDER_API_KEY, MODEL1, MODEL2)
+
 GUARDRAIL_MSG = "Tema inapropriado: %s"
 # disable linting for the next line
 # pylint: disable=line-too-long
