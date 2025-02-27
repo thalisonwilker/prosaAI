@@ -6,7 +6,7 @@ import random
 import feedparser
 
 from core.constants import (temas_enem, NUM_NOTICIAS,
-                            PROVIDER, MODEL1)
+                            PROVIDER, PROVIDER_API_KEY, MODEL1)
 from core.guardrails import (checar_tema_enem_analise_sintatica,
                              checar_tema_enem_semantica,
                              checar_tema_enem_por_llm)
@@ -105,7 +105,7 @@ def gerar_resumo_e_tema(noticias):
     texto_noticias = " ".join([noticia["descricao"] for noticia in noticias])
     prompt = build_prompt(texto_noticias)
     contexto = "Você é gerador de temas de redação no Formato ENEM"
-    response = make_llm_call(PROVIDER, MODEL1, contexto, prompt)
+    response = make_llm_call(PROVIDER, MODEL1, contexto, prompt, PROVIDER_API_KEY)
     tema_sugerido = json.loads(response)
 
     # Abordagem de validação do tema por três camadas.
