@@ -6,12 +6,15 @@ NEWS_PATH = "source/rss_source.json"
 NUM_NOTICIAS = 3
 SIM_THRESHOLD = 0.7
 
-PROVIDER = config("PROVIDER")
-PROVIDER_API_KEY = config("PROVIDER_API_KEY")
+# Provedor mais poderoso
+PROVIDER1 = config("PROVIDER1")
+PROVIDER1_API_KEY = config("PROVIDER1_API_KEY")
 MODEL1 = config("MODEL1")
-MODEL2 = config("MODEL2")
 
-print(PROVIDER, PROVIDER_API_KEY, MODEL1, MODEL2)
+# Provedor menos poderoso
+PROVIDER2 = config("PROVIDER2")
+PROVIDER2_API_KEY = config("PROVIDER2_API_KEY")
+MODEL2 = config("MODEL2")
 
 GUARDRAIL_MSG = "Tema inapropriado: %s"
 # disable linting for the next line
